@@ -1,0 +1,26 @@
+#
+# Realtek Semiconductor Corp.
+#
+
+PWD := $(shell pwd)
+KERNEL_CROSS?=arm-linux-
+KERNEL_ARCH?=arm
+KERNEL_CC?=$(KERNEL_CROSS)gcc
+KERNEL_SRC?=$(PWD)/../../kernel/linux-5.4
+KERNEL_OUT?=$(OUT)/obj/KERNEL_OBJ
+
+KMOD_NAME := kmod-hello-test
+obj-m := $(KMOD_NAME).o
+$(KMOD_NAME)-objs = helloworld.o
+
+all:
+	$(MAKE) -C $(KERNEL_SRC) \
+		M=$(PWD) \
+		O=$(KERNEL_OUT) \
+		ARCH="$(KERNEL_ARCH)" \
+		VAR_ARCH="$(KERNEL_ARCH)" \
+		CROSS_COMPILE="$(KERNEL_CROSS)" \
+		CC="$(KERNEL_CC)" modules
+
+clean:
+	rm -rf *.o *.ko .*.cmd *.mod* Module.symvers modules.order
