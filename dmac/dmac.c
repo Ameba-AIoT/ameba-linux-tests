@@ -5,6 +5,7 @@
 * Copyright (C) 2023, Realtek Corporation. All rights reserved.
 */
 
+#include <dt-bindings/realtek/dmac/realtek-ameba-dmac.h>
 #include "rtk_dmac_test.h"
 
 #define RTK_DMAC_TEST_TODO	0
@@ -119,6 +120,7 @@ int rtk_dma_test_cyclic(struct device *test_dev, int loop)
 	struct dma_async_tx_descriptor *txdesc;
 	u32 ret, dma_test_times = 0;
 	const char *name = "dma_test_cyclic";
+	struct dma_peripheral_config dma_peri;
 
 	dev_info(test_dev, "rtk_dma_test_cyclic\n");
 
@@ -152,11 +154,15 @@ int rtk_dma_test_cyclic(struct device *test_dev, int loop)
 		config->dst_port_window_size = 0;
 		config->dst_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
 		config->dst_maxburst = 1;
-		config->slave_id = 0;
 		config->src_addr = test_addr.dma_handle_src;
 		config->src_port_window_size = 0;
 		config->src_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
 		config->src_maxburst = 1;
+
+		/* For linux kernel 6.6 */
+		dma_peri.slave_id = 0;
+		config->peripheral_config = &dma_peri;
+		config->peripheral_size = sizeof(struct dma_peripheral_config);
 
 		dev_info(test_dev, "----- slave config. -----\n");
 		ret = dmaengine_slave_config(chan, config);
