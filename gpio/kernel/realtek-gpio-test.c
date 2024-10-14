@@ -65,7 +65,7 @@ static int rtk_gpio_set_debounce(void)
 	gpio_index = rtk_gtest_data->index;
 	if (rtk_gtest_data->db_enable && strcmp(rtk_gtest_data->db_enable, "enable") == 0) {
 		pr_info("Set GPIO debounce db_div_cnt: %d\n", rtk_gtest_data->db_div_cnt);
-		ret = gpio_set_debounce(gpio_index, rtk_gtest_data->db_div_cnt);
+		ret = gpiod_set_debounce(gpio_to_desc(gpio_index), rtk_gtest_data->db_div_cnt);
 		if (ret) {
 			pr_err("Error: Failed to set GPIO debounce: %d\n", ret);
 			return -EINVAL;
@@ -350,7 +350,6 @@ fail_gpio:
 static int rtk_gpio_test_probe(struct platform_device *pdev)
 {
 	struct device_node *np = pdev->dev.of_node;
-	enum of_gpio_flags flags;
 	int gpio_in;
 	int gpio_out;
 	int ret;
@@ -360,7 +359,7 @@ static int rtk_gpio_test_probe(struct platform_device *pdev)
 		return -ENODEV;
 	}
 
-	gpio_in = of_get_named_gpio_flags(np, "rtk,test-gpios", 0, &flags);
+	gpio_in = of_get_named_gpio(np, "rtk,test-gpios", 0);
 	if (!gpio_is_valid(gpio_in)) {
 		pr_err("Error: Failed to get test-gpios <0> property\n");
 		return -ENODEV;
@@ -368,7 +367,7 @@ static int rtk_gpio_test_probe(struct platform_device *pdev)
 
 	pr_info("GPIO in: %d\n", gpio_in);
 
-	gpio_out = of_get_named_gpio_flags(np, "rtk,test-gpios", 1, &flags);
+	gpio_out = of_get_named_gpio(np, "rtk,test-gpios", 1);
 	if (!gpio_is_valid(gpio_out)) {
 		pr_err("Error: Failed to Fail to get test-gpios <1> property\n");
 		return -ENODEV;
