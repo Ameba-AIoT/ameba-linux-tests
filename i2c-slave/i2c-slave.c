@@ -26,7 +26,7 @@
 #include <linux/of.h>
 
 /* Can include directly in kernel space drivers. */
-#include "../../linux-5.4/drivers/i2c/i2c-core.h"
+#include "../../linux/drivers/i2c/i2c-core.h"
 
 #if IS_ENABLED(CONFIG_I2C_SLAVE)
 #define TEST_READ_DONE			1
@@ -89,7 +89,7 @@ static int i2c_slave_callback_example(
 	return 0;
 }
 
-int rtk_i2c_slave_test_probe(struct i2c_client *client, const struct i2c_device_id *id)
+int rtk_i2c_slave_test_probe(struct i2c_client *client)
 {
 	int ret = 0;
 
@@ -112,24 +112,22 @@ int rtk_i2c_slave_test_probe(struct i2c_client *client, const struct i2c_device_
 	return ret;
 }
 
-static int rtk_i2c_slave_test_remove(struct i2c_client *client)
+static void rtk_i2c_slave_test_remove(struct i2c_client *client)
 {
 	pr_info("--- rtk_i2c_slave_test_remove ---");
 	i2c_slave_unregister(client);
-	return 0;
 }
 
 #else // IS_ENABLED(CONFIG_I2C_SLAVE)
-static int rtk_i2c_slave_test_probe(struct i2c_client *client, const struct i2c_device_id *id)
+static int rtk_i2c_slave_test_probe(struct i2c_client *client)
 {
 	pr_info(" Please open the macro I2C_SLAVE_REALTEK first.");
 	return -ENODEV;
 }
 
-static int rtk_i2c_slave_test_remove(struct i2c_client *client)
+static void rtk_i2c_slave_test_remove(struct i2c_client *client)
 {
 	pr_info(" Please open the macro I2C_SLAVE_REALTEK first.");
-	return 0;
 }
 #endif // IS_ENABLED(CONFIG_I2C_SLAVE)
 
