@@ -11,14 +11,13 @@
 #include <string.h>
 #include <sys/ioctl.h>
 #include <sys/time.h>
-#include <sys/types.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <errno.h>
 #include <time.h>
 
 /* Define new affairs in realtek-misc.h and implement relevant functions in Realtek misc driver. */
-#include <realtek-misc.h>
+#include <ameba/realtek-misc.h>
 
 #define READ_DATA_SIZE	1
 

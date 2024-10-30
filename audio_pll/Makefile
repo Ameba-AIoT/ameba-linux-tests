@@ -12,6 +12,7 @@ RANLIB := $(CROSS_COMPILE)ranlib
 O ?= $(shell pwd)
 
 CFLAGS += "-I./include"
+CFLAGS += "-I../../kernel/linux/include/uapi"
 
 exe-y = rtk_audio_pll_test
 
