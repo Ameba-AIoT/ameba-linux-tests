@@ -18,7 +18,7 @@
 #include <linux/time.h>
 #include <linux/timekeeping.h>
 
-#include <linux/mfd/rtk-timer.h>
+#include <linux/ameba/rtk-timer.h>
 
 static int start_time = 0;
 static int end_time = 0;
@@ -33,10 +33,10 @@ module_param(set_timer_us, int, S_IRUSR);
 
 long get_system_time_nanosecond(void)
 {
-	struct timespec timestamp = {};
+	struct timespec64 timestamp = {};
 
-	getnstimeofday(&timestamp);
-	return timestamp.tv_sec * 1000000000 + timestamp.tv_nsec;
+	ktime_get_real_ts64(&timestamp);
+	return timestamp.tv_sec * 1000000000LL + timestamp.tv_nsec;
 }
 
 static int rtk_timer_test_callback(void *id)
