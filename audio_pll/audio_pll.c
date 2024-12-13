@@ -8,7 +8,7 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "ameba/audio_pll.h"
+#include "sound/rtk_audio_pll.h"
 
 #define AUDIO_PLL_DEV "/dev/audio_pll_clk"
 
