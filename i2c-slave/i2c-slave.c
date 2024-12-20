@@ -25,9 +25,6 @@
 #include <linux/i2c.h>
 #include <linux/of.h>
 
-/* Can include directly in kernel space drivers. */
-#include "../../linux/drivers/i2c/i2c-core.h"
-
 #if IS_ENABLED(CONFIG_I2C_SLAVE)
 #define TEST_READ_DONE			1
 #define TEST_WRITE_DONE			2
