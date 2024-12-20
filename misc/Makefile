@@ -11,7 +11,7 @@ AR := $(CROSS_COMPILE)ar
 RANLIB := $(CROSS_COMPILE)ranlib
 O ?= $(shell pwd)
 
-CFLAGS += "-I../../kernel/linux/include/uapi"
+CFLAGS += "-I../../kernel/linux-6.6/include/uapi"
 
 exe-y = rtk_misc_test
 
