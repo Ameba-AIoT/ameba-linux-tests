@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
 	}
 
 	do {
-		n_read = read(fd_wakeup_count, buf, 4);
+		n_read = read(fd_wakeup_count, buf, 64);
 		printf("Wakeup_count is %s\n", buf);
 		if (n_read > 0) {
 			printf("Write it back now\n");
