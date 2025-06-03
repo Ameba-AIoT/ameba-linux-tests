@@ -53,15 +53,6 @@ int main(int argc, char **argv)
 
 	printf("\nUUID: %u\n", val);
 
-	while (1) {
-		printf("Disable DDRC Auto Gating.\n");
-		ret = ioctl(fd, RTK_MISC_IOC_DDRC_DISGATE, &val);
-		sleep(10);
-		printf("Enable DDRC Auto Gating.\n");
-		ret = ioctl(fd, RTK_MISC_IOC_DDRC_AUTO_GATE, &val);
-		sleep(10);
-	}
-
 	close(fd);
 
 	printf("Misc test PASS\n");
