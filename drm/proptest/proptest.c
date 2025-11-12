@@ -32,9 +32,6 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
 
 #include "xf86drm.h"
 #include "xf86drmMode.h"
@@ -130,7 +127,7 @@ dump_prop(uint32_t prop_id, uint64_t value)
 		printf("\t\tenums:");
 		for (i = 0; i < prop->count_enums; i++)
 			printf(" %s=%"PRIu64, prop->enums[i].name,
-			       prop->enums[i].value);
+			       (uint64_t)prop->enums[i].value);
 		printf("\n");
 	} else if (drm_property_type_is(prop, DRM_MODE_PROP_BITMASK)) {
 		printf("\t\tvalues:");
@@ -195,7 +192,7 @@ static void listConnectorProperties(void)
 		}
 
 		printf("Connector %u (%s-%u)\n", c->connector_id,
-		       util_lookup_connector_type_name(c->connector_type),
+		       drmModeGetConnectorTypeName(c->connector_type),
 		       c->connector_type_id);
 
 		listObjectProperties(c->connector_id,
@@ -300,8 +297,7 @@ int main(int argc, char *argv[])
 
 	args = argc - optind;
 
-	//fd = util_open(device, module);
-	fd = open("/dev/dri/card0", O_RDWR, 0);
+	fd = util_open(device, module);
 	if (fd < 0)
 		return 1;
 

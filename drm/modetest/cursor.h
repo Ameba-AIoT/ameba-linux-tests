@@ -22,9 +22,6 @@
  * IN THE SOFTWARE.
  */
 
-#ifndef D1684E1C_23BF_4F49_9E7F_A2681ABE1A01
-#define D1684E1C_23BF_4F49_9E7F_A2681ABE1A01
-
 #ifndef __CURSOR_H__
 #define __CURSOR_H__
 
@@ -34,6 +31,3 @@ int cursor_start(void);
 int cursor_stop(void);
 
 #endif
-
-
-#endif /* D1684E1C_23BF_4F49_9E7F_A2681ABE1A01 */

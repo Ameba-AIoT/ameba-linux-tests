@@ -16,7 +16,7 @@ exe-y = rtk_drm_mode_test
 all: $(O)/$(exe-y)
 
 $(O)/$(exe-y):
-	$(CC) $(CFLAGS) $(LIBDRM_INC) $(LIBDRM_LIB) $(LDFLAGS) modetest.c cursor.c buffers.c ../util/format.c ../util/kms.c ../util/pattern.c -o $@
+	$(CC) $(CFLAGS) $(LIBDRM_INC) $(LIBDRM_LIB) $(LDFLAGS) modetest.c cursor.c buffers.c ../util/format.c ../util/kms.c ../util/pattern.c -o $@ -lm
 
 clean:
 	-rm -f $(O)/*
