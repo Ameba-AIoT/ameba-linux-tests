@@ -35,7 +35,7 @@
 #include "drm.h"
 #include "drm_fourcc.h"
 
-#include "libdrm_macros.h"
+#include "util/libdrm_macros.h"
 #include "xf86drm.h"
 #include "xf86drmMode.h"
 
