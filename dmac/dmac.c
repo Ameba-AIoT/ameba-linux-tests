@@ -6,6 +6,7 @@
 */
 
 #include <dt-bindings/realtek/dmac/realtek-ameba-dmac.h>
+#include <linux/platform_device.h>
 #include "rtk_dmac_test.h"
 
 #define RTK_DMAC_TEST_TODO	0
@@ -227,10 +228,9 @@ static int rtk_dma_test_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int rtk_dma_test_remove(struct platform_device *pdev)
+static void rtk_dma_test_remove(struct platform_device *pdev)
 {
 	printk("----- rtk_dma_test_remove -----\n");
-	return 0;
 }
 
 static struct platform_driver rtk_dma_test_driver = {

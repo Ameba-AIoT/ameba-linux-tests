@@ -386,7 +386,7 @@ static int rtk_gpio_test_probe(struct platform_device *pdev)
 	of_property_read_string(np, "rtk,db_enable", &rtk_gtest_data->db_enable);
 	of_property_read_u32(np, "rtk,db_div_cnt", &rtk_gtest_data->db_div_cnt);
 
-	strlcpy(rtk_gtest_data->dev_name, "gpio-dev", RTK_DEV_NAME_MAX_LEN);
+	strncpy(rtk_gtest_data->dev_name, "gpio-dev", RTK_DEV_NAME_MAX_LEN);
 
 	init_completion(&rtk_gtest_data->done);
 
@@ -406,7 +406,7 @@ static int rtk_gpio_test_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int rtk_gpio_test_remove(struct platform_device *pdev)
+static void rtk_gpio_test_remove(struct platform_device *pdev)
 {
 	if (test_case <= 4) {
 		if (of_property_read_bool(pdev->dev.of_node, "wakeup-source")) {
@@ -416,8 +416,6 @@ static int rtk_gpio_test_remove(struct platform_device *pdev)
 	}
 
 	platform_set_drvdata(pdev, NULL);
-
-	return 0;
 }
 
 static const struct of_device_id rtk_gpio_test_match[] = {

@@ -6,6 +6,7 @@
 */
 
 #include <dt-bindings/realtek/dmac/realtek-ameba-dmac.h>
+#include <linux/platform_device.h>
 #include "rtk_dmac_test.h"
 
 static u8 dma_cyclic_status = RTK_DMAC_TEST_SUCCESS;
@@ -207,10 +208,9 @@ static int rtk_multi_dma_test_probe(struct platform_device *pdev)
 	return 0;
 }
 
-static int rtk_multi_dma_test_remove(struct platform_device *pdev)
+static void rtk_multi_dma_test_remove(struct platform_device *pdev)
 {
 	printk("----- rtk_multi_dma_test_remove -----");
-	return 0;
 }
 
 static const struct of_device_id rtk_multi_dma_test_match[] = {
