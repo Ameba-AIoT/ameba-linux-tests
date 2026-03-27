@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <errno.h>
+#include <stdlib.h>
+#include <string.h>
+#include <unistd.h>
+
 #include <sys/timerfd.h>
 
 int main(int argc, char **argv)
