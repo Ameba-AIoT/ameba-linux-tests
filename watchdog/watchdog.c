@@ -26,8 +26,8 @@ int main(int argc, char **argv)
 	int ret = 0;
 	int fd = -1;
 	int timeout = 20;
-	int gettime0 = 0;
-	int gettime1 = 0;
+	struct timespec gettime0;
+	struct timespec gettime1;
 
 	printf("Watchdog test started\n");
 
@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 		sleep(timeout - WDG_FEED_PRE_TIMEOUT);
 
 		clock_gettime(CLOCK_MONOTONIC, &gettime1);
-		printf("Feed watchdog. %ds passed.\n", gettime1 - gettime0);
+		printf("Feed watchdog. %.9fs passed.\n", gettime1.tv_sec - gettime0.tv_sec + (double)(gettime1.tv_nsec - gettime0.tv_nsec) / 1000000000.0);
 		ret = ioctl(fd, WDIOC_KEEPALIVE, NULL);
 		if (ret < 0) {
 			printf("Fail to feed watchdog: %d\n", ret);
@@ -63,7 +63,7 @@ int main(int argc, char **argv)
 			clock_gettime(CLOCK_MONOTONIC, &gettime0);
 			while(1) {
 				clock_gettime(CLOCK_MONOTONIC, &gettime1);
-				printf("%ds passed.\n", gettime1 - gettime0);
+		        printf("%.9fs passed.\n", gettime1.tv_sec - gettime0.tv_sec + (double)(gettime1.tv_nsec - gettime0.tv_nsec) / 1000000000.0);
 				sleep(1);
 			}
 		}
