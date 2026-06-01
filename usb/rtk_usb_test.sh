@@ -97,6 +97,20 @@ function insmod_usbd_msc_ko()
     insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/dwc2/dwc2.ko
 }
 
+function insmod_usbd_uac2_ko()
+{
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/rtkdrivers/usb_phy/phy-rtk-usb.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/common/usb-common.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/core/usbcore.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/gadget/udc/udc-core.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/fs/configfs/configfs.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/gadget/libcomposite.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/gadget/function/u_audio.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/gadget/function/usb_f_uac2.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/roles/roles.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/dwc2/dwc2.ko
+}
+
 function mount_configfs()
 {
     if [ -e "/mnt/config/usb_gadget" ]; then
@@ -273,6 +287,51 @@ function usbd_msc_init()
     echo 2 > /sys/module/phy_rtk_usb/parameters/usb_force_mode
 }
 
+function usbd_uac2_init()
+{
+    echo "UAC2 device init"
+
+    mount_configfs
+
+    cd /mnt/config/usb_gadget
+    mkdir uac2 > /dev/null 2>&1
+    cd uac2
+
+    # Batch C1: basic USB descriptors
+    echo 0x0200 > bcdUSB
+    echo 0x00   > bDeviceClass
+    echo 0x00   > bDeviceSubClass
+    echo 0x00   > bDeviceProtocol
+    echo 64     > bMaxPacketSize0
+    echo 0x0BDA > idVendor
+    echo 0x8730 > idProduct
+
+    # Batch C2: strings
+    mkdir strings/0x409 > /dev/null 2>&1
+    echo "Realtek" > strings/0x409/manufacturer
+    echo "UAC2 device" > strings/0x409/product
+    cat /proc/realtek/uuid > strings/0x409/serialnumber 2>/dev/null || echo "01234567" > strings/0x409/serialnumber
+
+    # Batch C3: config
+    mkdir configs/c.1 > /dev/null 2>&1
+    echo 120 > configs/c.1/MaxPower
+    mkdir configs/c.1/strings/0x409 > /dev/null 2>&1
+    echo "uac2" > configs/c.1/strings/0x409/configuration
+
+    # Batch C4: UAC2 function attributes (c_sync=adaptive -- dwc2 no async EP)
+    mkdir functions/uac2.0 > /dev/null 2>&1
+    echo 3        > functions/uac2.0/c_chmask
+    echo 48000    > functions/uac2.0/c_srate
+    echo 2        > functions/uac2.0/c_ssize
+    echo 3        > functions/uac2.0/p_chmask
+    echo 48000    > functions/uac2.0/p_srate
+    echo 2        > functions/uac2.0/p_ssize
+    echo adaptive > functions/uac2.0/c_sync
+    ln -sf functions/uac2.0 configs/c.1/
+    #Force device mode
+    echo 2 > /sys/module/phy_rtk_usb/parameters/usb_force_mode
+}
+
 function active_device()
 {
     echo "Activate device"
@@ -302,6 +361,7 @@ function usb_usage()
     echo "  usbd_adb             ADB device"
     echo "  usbd_hid             HID device"
     echo "  usbd_msc             MSC device"
+    echo "  usbd_uac2            UAC2 audio device"
     echo
     echo "Example:"
     echo "  $0 -b -r otg"
@@ -373,6 +433,14 @@ case "$role" in
         fi
         deactive_device
         usbd_msc_init
+        active_device
+        ;;
+    "usbd_uac2")
+        if [ "$built_in" != "true" ]; then
+            insmod_usbd_uac2_ko
+        fi
+        deactive_device
+        usbd_uac2_init
         active_device
         ;;
     *)
