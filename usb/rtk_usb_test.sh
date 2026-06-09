@@ -111,6 +111,32 @@ function insmod_usbd_uac2_ko()
     insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/dwc2/dwc2.ko
 }
 
+function insmod_usbh_hid_ko()
+{
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/rtkdrivers/usb_phy/phy-rtk-usb.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/common/usb-common.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/core/usbcore.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/gadget/udc/udc-core.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/roles/roles.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/dwc2/dwc2.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/hid/usbhid/usbhid.ko
+}
+
+function insmod_usbh_uac_ko()
+{
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/rtkdrivers/usb_phy/phy-rtk-usb.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/common/usb-common.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/core/usbcore.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/gadget/udc/udc-core.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/roles/roles.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/dwc2/dwc2.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/sound/core/snd-pcm.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/sound/core/snd-hwdep.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/sound/core/snd-rawmidi.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/sound/usb/snd-usbmidi-lib.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/sound/usb/snd-usb-audio.ko
+}
+
 function mount_configfs()
 {
     if [ -e "/mnt/config/usb_gadget" ]; then
@@ -138,6 +164,18 @@ function mount_configfs()
 }
 
 function usbh_msc_init()
+{
+    #Force host mode
+    echo 1 > /sys/module/phy_rtk_usb/parameters/usb_force_mode
+}
+
+function usbh_hid_init()
+{
+    #Force host mode
+    echo 1 > /sys/module/phy_rtk_usb/parameters/usb_force_mode
+}
+
+function usbh_uac_init()
 {
     #Force host mode
     echo 1 > /sys/module/phy_rtk_usb/parameters/usb_force_mode
@@ -318,9 +356,9 @@ function usbd_uac2_init()
     mkdir configs/c.1/strings/0x409 > /dev/null 2>&1
     echo "uac2" > configs/c.1/strings/0x409/configuration
 
-    # Batch C4: UAC2 function attributes (c_sync=adaptive -- dwc2 no async EP)
+    # Batch C4: UAC2 function attributes (playback only, capture disabled -- dwc2 no async ISO EP)
     mkdir functions/uac2.0 > /dev/null 2>&1
-    echo 3        > functions/uac2.0/c_chmask
+    echo 3        > functions/uac2.0/c_chmask   # 1 capture channel
     echo 48000    > functions/uac2.0/c_srate
     echo 2        > functions/uac2.0/c_ssize
     echo 3        > functions/uac2.0/p_chmask
@@ -357,6 +395,8 @@ function usb_usage()
     echo "Where role:"
     echo "  otg                  OTG mode"
     echo "  usbh_msc             MSC host"
+    echo "  usbh_hid             HID host"
+    echo "  usbh_uac             UAC host"
     echo "  usbd_acm             CDC ACM device"
     echo "  usbd_adb             ADB device"
     echo "  usbd_hid             HID device"
@@ -401,6 +441,18 @@ case "$role" in
             insmod_usbh_msc_ko
         fi
         usbh_msc_init
+        ;;
+    "usbh_hid")
+        if [ "$built_in" != "true" ]; then
+            insmod_usbh_hid_ko
+        fi
+        usbh_hid_init
+        ;;
+    "usbh_uac")
+        if [ "$built_in" != "true" ]; then
+            insmod_usbh_uac_ko
+        fi
+        usbh_uac_init
         ;;
     "usbd_acm")
         if [ "$built_in" != "true" ]; then
