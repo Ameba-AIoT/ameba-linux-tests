@@ -57,7 +57,7 @@ function insmod_usbd_adb_ko()
     insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/dwc2/dwc2.ko
 }
 
-function insmod_usbd_cdc_acm_ko()
+function insmod_usbd_acm_ko()
 {
     insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/rtkdrivers/usb_phy/phy-rtk-usb.ko
     insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/common/usb-common.ko
@@ -111,6 +111,17 @@ function insmod_usbd_uac2_ko()
     insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/dwc2/dwc2.ko
 }
 
+function insmod_usbh_uvc_ko()
+{
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/rtkdrivers/usb_phy/phy-rtk-usb.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/common/usb-common.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/core/usbcore.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/gadget/udc/udc-core.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/roles/roles.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/dwc2/dwc2.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/media/usb/uvc/uvcvideo.ko
+}
+
 function insmod_usbh_hid_ko()
 {
     insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/rtkdrivers/usb_phy/phy-rtk-usb.ko
@@ -135,6 +146,39 @@ function insmod_usbh_uac_ko()
     insmod_ko /lib/modules/$KERNEL_VERSION/kernel/sound/core/snd-rawmidi.ko
     insmod_ko /lib/modules/$KERNEL_VERSION/kernel/sound/usb/snd-usbmidi-lib.ko
     insmod_ko /lib/modules/$KERNEL_VERSION/kernel/sound/usb/snd-usb-audio.ko
+}
+
+function insmod_usbh_vendor_ko()
+{
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/rtkdrivers/usb_phy/phy-rtk-usb.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/common/usb-common.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/core/usbcore.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/gadget/udc/udc-core.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/roles/roles.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/dwc2/dwc2.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/misc/usbtest.ko
+}
+
+function insmod_usbd_vendor_ko()
+{
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/rtkdrivers/usb_phy/phy-rtk-usb.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/common/usb-common.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/core/usbcore.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/gadget/udc/udc-core.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/fs/configfs/configfs.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/gadget/libcomposite.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/roles/roles.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/dwc2/dwc2.ko
+}
+function insmod_usbh_acm_ko()
+{
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/rtkdrivers/usb_phy/phy-rtk-usb.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/common/usb-common.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/core/usbcore.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/gadget/udc/udc-core.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/roles/roles.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/dwc2/dwc2.ko
+    insmod_ko /lib/modules/$KERNEL_VERSION/kernel/drivers/usb/class/cdc-acm.ko
 }
 
 function mount_configfs()
@@ -163,22 +207,12 @@ function mount_configfs()
     return 0
 }
 
-function usbh_msc_init()
+function usb_force_mode()
 {
-    #Force host mode
-    echo 1 > /sys/module/phy_rtk_usb/parameters/usb_force_mode
-}
-
-function usbh_hid_init()
-{
-    #Force host mode
-    echo 1 > /sys/module/phy_rtk_usb/parameters/usb_force_mode
-}
-
-function usbh_uac_init()
-{
-    #Force host mode
-    echo 1 > /sys/module/phy_rtk_usb/parameters/usb_force_mode
+  [ "$1" = 1 ] || [ "$1" = 2 ] || { echo "usage: usb_force_mode 1|2" >&2; return 2; }
+  local f=/sys/module/phy_rtk_usb/parameters/usb_force_mode
+  [ -w "$f" ] || { echo "not writable: $f" >&2; return 1; }
+  echo "$1" > "$f"
 }
 
 function usbd_acc_init()
@@ -215,13 +249,9 @@ function usbd_acc_init()
 
     mkdir functions/accessory.adb > /dev/null 2>&1
     ln -sf functions/accessory.adb configs/c.1/
-    #Force device mode in adb
-    if [ "$arg" -eq 2 ]; then
-       echo "$arg" > /sys/module/phy_rtk_usb/parameters/usb_force_mode
-    fi
 }
 
-function usbd_cdc_acm_init()
+function usbd_acm_init()
 {
     echo "CDC ACM device init"
 
@@ -250,8 +280,6 @@ function usbd_cdc_acm_init()
 
     mkdir functions/acm.ttyS1 > /dev/null 2>&1
     ln -sf functions/acm.ttyS1 configs/c.1/
-    #Force device mode
-    echo 2 > /sys/module/phy_rtk_usb/parameters/usb_force_mode
 }
 
 function usbd_hid_init()
@@ -288,8 +316,6 @@ function usbd_hid_init()
     echo 8 > functions/hid.usb0/report_length
     echo -ne \\x05\\x01\\x09\\x06\\xa1\\x01\\x05\\x07\\x19\\xe0\\x29\\xe7\\x15\\x00\\x25\\x01\\x75\\x01\\x95\\x08\\x81\\x02\\x95\\x01\\x75\\x08\\x81\\x03\\x95\\x05\\x75\\x01\\x05\\x08\\x19\\x01\\x29\\x05\\x91\\x02\\x95\\x01\\x75\\x03\\x91\\x03\\x95\\x06\\x75\\x08\\x15\\x00\\x25\\x65\\x05\\x07\\x19\\x00\\x29\\x65\\x81\\x00\\xc0 > functions/hid.usb0/report_desc
     ln -sf functions/hid.usb0 configs/c.1/
-    #Force device mode
-    echo 2 > /sys/module/phy_rtk_usb/parameters/usb_force_mode
 }
 
 function usbd_msc_init()
@@ -321,8 +347,6 @@ function usbd_msc_init()
     echo 1 > functions/mass_storage.0/lun.0/removable
     echo 0 > functions/mass_storage.0/lun.0/nofua
     ln -sf functions/mass_storage.0 configs/c.1/
-    #Force device mode
-    echo 2 > /sys/module/phy_rtk_usb/parameters/usb_force_mode
 }
 
 function usbd_uac2_init()
@@ -356,9 +380,9 @@ function usbd_uac2_init()
     mkdir configs/c.1/strings/0x409 > /dev/null 2>&1
     echo "uac2" > configs/c.1/strings/0x409/configuration
 
-    # Batch C4: UAC2 function attributes (playback only, capture disabled -- dwc2 no async ISO EP)
+    # Batch C4: UAC2 function attributes
     mkdir functions/uac2.0 > /dev/null 2>&1
-    echo 3        > functions/uac2.0/c_chmask   # 1 capture channel
+    echo 3        > functions/uac2.0/c_chmask
     echo 48000    > functions/uac2.0/c_srate
     echo 2        > functions/uac2.0/c_ssize
     echo 3        > functions/uac2.0/p_chmask
@@ -366,22 +390,62 @@ function usbd_uac2_init()
     echo 2        > functions/uac2.0/p_ssize
     echo adaptive > functions/uac2.0/c_sync
     ln -sf functions/uac2.0 configs/c.1/
-    #Force device mode
-    echo 2 > /sys/module/phy_rtk_usb/parameters/usb_force_mode
 }
 
-function active_device()
+function usbd_vendor_init()
+{
+    echo "Vendor device init"
+
+    mount_configfs
+
+    cd /mnt/config/usb_gadget
+    mkdir vendor > /dev/null 2>&1
+    cd vendor
+
+    echo 0x0200 > bcdUSB
+    echo 0xa4a0 > idProduct
+    echo 0x0525 > idVendor
+
+    mkdir strings/0x409 > /dev/null 2>&1
+    echo "Realtek" > strings/0x409/manufacturer
+    echo "Vendor" > strings/0x409/product
+    echo "123456789AB" > strings/0x409/serialnumber
+
+    mkdir configs/c.1 > /dev/null 2>&1
+    mkdir configs/c.2 > /dev/null 2>&1
+
+    echo 120 > configs/c.1/MaxPower
+    echo 120 > configs/c.2/MaxPower
+
+    mkdir configs/c.1/strings/0x409 > /dev/null 2>&1
+    mkdir configs/c.2/strings/0x409 > /dev/null 2>&1
+
+    echo "vendor1" > configs/c.1/strings/0x409/configuration
+    echo "vendor2" > configs/c.2/strings/0x409/configuration
+
+    mkdir functions/SourceSink.0 > /dev/null 2>&1
+    mkdir functions/Loopback.0 > /dev/null 2>&1
+
+    ln -sf functions/SourceSink.0 configs/c.1/
+    ln -sf functions/Loopback.0 configs/c.2/
+}
+
+
+function activate_device()
 {
     echo "Activate device"
     # Activate device
     ls /sys/class/udc > UDC
 }
 
-function deactive_device()
+function deactivate_device()
 {
     echo "Deactivate device"
-    # Activate device
-    echo "" > UDC
+    if [ -d /mnt/config/usb_gadget ]; then
+        for gadget in /mnt/config/usb_gadget/*/; do
+            [ -f "${gadget}UDC" ] && echo "" > "${gadget}UDC" 2>/dev/null || true
+        done
+    fi
 }
 
 function usb_usage()
@@ -394,14 +458,18 @@ function usb_usage()
     echo
     echo "Where role:"
     echo "  otg                  OTG mode"
+    echo "  usbh_acm             CDC ACM host"
+    echo "  usbh_uvc             UVC host"
     echo "  usbh_msc             MSC host"
     echo "  usbh_hid             HID host"
     echo "  usbh_uac             UAC host"
+    echo "  usbh_vendor          Vendor host"
     echo "  usbd_acm             CDC ACM device"
     echo "  usbd_adb             ADB device"
     echo "  usbd_hid             HID device"
     echo "  usbd_msc             MSC device"
     echo "  usbd_uac2            UAC2 audio device"
+    echo "  usbd_vendor          Vendor device"
     echo
     echo "Example:"
     echo "  $0 -b -r otg"
@@ -431,69 +499,102 @@ case "$role" in
         if [ "$built_in" != "true" ]; then
             insmod_otg_ko
         fi
-        deactive_device
+        deactivate_device
         usbd_acc_init
-        active_device
+        activate_device
         /bin/adbd &
         ;;
+    "usbh_acm")
+        if [ "$built_in" != "true" ]; then
+            insmod_usbh_acm_ko
+        fi
+        usb_force_mode 1
+        ;;
+    "usbh_uvc")
+        if [ "$built_in" != "true" ]; then
+            insmod_usbh_uvc_ko
+        fi
+        usb_force_mode 1
+        ;;
+
     "usbh_msc")
         if [ "$built_in" != "true" ]; then
             insmod_usbh_msc_ko
         fi
-        usbh_msc_init
+        usb_force_mode 1
         ;;
     "usbh_hid")
         if [ "$built_in" != "true" ]; then
             insmod_usbh_hid_ko
         fi
-        usbh_hid_init
+        usb_force_mode 1
         ;;
     "usbh_uac")
         if [ "$built_in" != "true" ]; then
             insmod_usbh_uac_ko
         fi
-        usbh_uac_init
+        usb_force_mode 1
+        ;;
+    "usbh_vendor")
+        if [ "$built_in" != "true" ]; then
+            insmod_usbh_vendor_ko
+        fi
+        usb_force_mode 1
         ;;
     "usbd_acm")
         if [ "$built_in" != "true" ]; then
-            insmod_usbd_cdc_acm_ko
+            insmod_usbd_acm_ko
         fi
-        deactive_device
-        usbd_cdc_acm_init
-        active_device
+        deactivate_device
+        usbd_acm_init
+        usb_force_mode 2
+        activate_device
         ;;
     "usbd_adb")
         if [ "$built_in" != "true" ]; then
             insmod_usbd_adb_ko
         fi
-        deactive_device
-        usbd_acc_init 2
-        active_device
+        deactivate_device
+        usbd_acc_init
+        usb_force_mode 2
+        activate_device
         /bin/adbd &
         ;;
     "usbd_hid")
         if [ "$built_in" != "true" ]; then
             insmod_usbd_hid_ko
         fi
-        deactive_device
+        deactivate_device
         usbd_hid_init
-        active_device
+        usb_force_mode 2
+        activate_device
         ;;
     "usbd_msc")
         if [ "$built_in" != "true" ]; then
             insmod_usbd_msc_ko
         fi
-        deactive_device
+        deactivate_device
         usbd_msc_init
-        active_device
+        usb_force_mode 2
+        activate_device
         ;;
     "usbd_uac2")
         if [ "$built_in" != "true" ]; then
             insmod_usbd_uac2_ko
         fi
-        deactive_device
+        deactivate_device
         usbd_uac2_init
-        active_device
+        usb_force_mode 2
+        activate_device
+        ;;
+    "usbd_vendor")
+        if [ "$built_in" != "true" ]; then
+            insmod_usbd_vendor_ko
+        fi
+        deactivate_device
+        usbd_vendor_init
+        usb_force_mode 2
+        activate_device
         ;;
     *)
         usb_usage
