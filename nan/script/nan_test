@@ -33,7 +33,7 @@ if [ "$MODULE_PATH" = "" ]; then
 fi
 
 if [ "$NAN_VENDOR_WRAPPER" = "" ]; then
-	NAN_VENDOR_WRAPPER=/usr/sbin/nan_vendor_wrapper
+	NAN_VENDOR_WRAPPER=/usr/bin/nan_vendor_wrapper
 fi
 
 if [ "$NAN_R3_BLE" = "" ]; then
@@ -111,10 +111,6 @@ while [ -n "$1" ]; do
 		;;
 	init)
 		rfkill unblock all
-		if [ "$MODULE_LOAD" = "" ]; then
-			modprobe cfg80211
-			insmod $MODULE_PATH
-		fi
 
 		if [ "$SINGLE_WIPHY" = "" ]; then
 		[ "$IF_UP" = "" ] && ifconfig $IF up
@@ -449,4 +445,3 @@ while [ -n "$1" ]; do
 		;;
 	esac
 done
-
